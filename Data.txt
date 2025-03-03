@@ -1,0 +1,13 @@
+Users: 
+1. Name: Rashid Shaikh
+2. email: rashid@gmail.com
+3. pass: 123456
+4. Role: USER
+
+
+Other users: 
+ChatGPT Chat: https://chatgpt.com/c/67c049e2-1028-8005-bdef-6f0b11ac106b
+
+Categories and Appliances:
+Claude Chat (rishirajsontakke25@gmail.com): https://claude.ai/chat/04e8a4e0-571d-483a-bca4-7cab174f3a09
+Added first 4 Categories

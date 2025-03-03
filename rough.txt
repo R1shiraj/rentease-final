@@ -1,0 +1,638 @@
+This is the project that i am working on.
+It is a full stack website that i want to build for home appliance rental:
+
+
+<project>
+
+**KEY PAGES AND FEATURES YOU SHOULD IMPLEMENT:**
+1. **Pages:**
+* **Authentication Pages (/auth)** (done)
+   * **Login** (done)
+   * **Register (User/Provider registration)** (done)
+* **Home Page (/user/)** (done)
+   * **Featured appliances** (done)
+   * **Categories listing** (done)
+   * **Search functionality** (done)
+* **Appliance Pages** (done)
+   * **Listing page (/user/appliances)** (done)
+   * **Single appliance page (/user/appliances/[id])** (done)
+   * **Category-wise listing ** (done)
+* **User Dashboard (/user/dashboard)**
+   * **Profile management** (done)
+   * **Active rentals** (done)
+   * **Rental history** (done)
+   * **Reviews given** (done)
+   * **Cart (items added in cart)** (done)
+* **Provider Dashboard (/provider)** (done)
+   * **Profile management** (done)
+   * **Appliance management (CRUD)** (done)
+   * **Rental requests** (done)
+   * **Active rentals** (done)
+* **Admin Dashboard (/admin)** (done)
+   * **User management** (done)
+   * **Provider verification** (done)
+   * **Category management** (done)
+   * **Basic analytics** (done)
+
+1. **Core Features:**
+* Authentication & Authorization
+* Search and filter appliances
+* Rental booking system
+* Basic review system
+* Simple admin panel
+* Provider appliance management
+* User rental management
+**    3. Key Functionality:**
+* Mobile responsiveness
+* Beautiful, modern, user-friendly and colorful UI/UX.
+* User Registration/Login
+* Browse appliances by category
+* Rent appliances with date selection
+* View rental history
+* Add/manage appliances (for providers)
+* Basic review system
+* Admin approval for providers
+* Simple category management
+1. **Additional Notes:**
+* Everything you implement should be mobile responsive and also suitable for desktop (use your knowledge and experience to make such ui)
+* Use NextAuth.js for authentication
+* Implement middleware for route protection
+* Use MongoDB Atlas for database
+* Use ShadcN UI components for the interface
+* Dont regenerate code for shadcn ui components ("components/ui/...") as i can use npx command to get those by myself. 
+* Implement server actions for form submissions
+* Use TypeScript for type safety
+* Include error handling
+* Add loading states
+* **Feel free to use your own creativiy, knowledge, intuition and experience for the ui/ux/design and functionalities**.
+
+These are the models that i have created: 
+<models>
+
+Appliance Model: 
+// src/models/Appliance.ts
+import mongoose, { Schema, Document } from 'mongoose';
+
+export interface IAppliance extends Document {
+    name: string;
+    description: string;
+    category: string;
+    images: string[];
+    providerId: string;
+    specifications: {
+        brand: string;
+        model: string;
+        year: number;
+        [key: string]: any;
+    };
+    pricing: {
+        daily: number;
+        weekly: number;
+        monthly: number;
+        deposit: number;
+    };
+    status: 'AVAILABLE' | 'RENTED' | 'MAINTENANCE';
+    ratings: number;
+    reviewCount: number;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const ApplianceSchema = new Schema<IAppliance>(
+    {
+        name: { type: String, required: true },
+        description: { type: String, required: true },
+        category: { type: String, required: true },
+        images: [{ type: String }],
+        providerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        specifications: {
+            brand: { type: String, required: true },
+            model: { type: String, required: true },
+            year: { type: Number, required: true },
+        },
+        pricing: {
+            daily: { type: Number, required: true },
+            weekly: { type: Number, required: true },
+            monthly: { type: Number, required: true },
+            deposit: { type: Number, required: true },
+        },
+        status: {
+            type: String,
+            enum: ['AVAILABLE', 'RENTED', 'MAINTENANCE'],
+            default: 'AVAILABLE'
+        },
+        ratings: { type: Number, default: 0 },
+        reviewCount: { type: Number, default: 0 }
+    },
+    { timestamps: true }
+);
+
+export default mongoose.models.Appliance || mongoose.model<IAppliance>('Appliance', ApplianceSchema);
+Category Model:
+// src/models/Category.ts
+import mongoose, { Schema, Document } from 'mongoose';
+
+export interface ICategory extends Document {
+    name: string;
+    description: string;
+    image: string;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const CategorySchema = new Schema<ICategory>(
+    {
+        name: { type: String, required: true, unique: true },
+        description: { type: String, required: true },
+        image: { type: String, required: true },
+        isActive: { type: Boolean, default: true },
+    },
+    { timestamps: true }
+);
+
+export default mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
+
+User Model: 
+// src/models/User.ts
+import mongoose, { Schema, Document } from 'mongoose';
+import { providerFields } from './Provider';
+
+export interface ICartItem {
+    applianceId: mongoose.Types.ObjectId;
+    addedAt: Date;
+}
+
+export interface IUser extends Document {
+    email: string;
+    password: string;
+    name: string;
+    phone: string;
+    address: {
+        street: string;
+        city: string;
+        state: string;
+        zipCode: string;
+    };
+    role: 'USER' | 'ADMIN' | 'PROVIDER';
+    cart: ICartItem[];
+    // Provider specific fields
+    businessName?: string;
+    businessAddress?: {
+        street: string;
+        city: string;
+        state: string;
+        zipCode: string;
+    };
+    rating?: number;
+    appliances?: string[];
+    isVerified?: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const UserSchema = new Schema<IUser>(
+    {
+        email: { type: String, required: true, unique: true },
+        password: { type: String, required: true },
+        name: { type: String, required: true },
+        phone: { type: String, required: true },
+        address: {
+            street: { type: String },
+            city: { type: String },
+            state: { type: String },
+            zipCode: { type: String }
+        },
+        role: {
+            type: String,
+            enum: ['USER', 'ADMIN', 'PROVIDER'],
+            default: 'USER'
+        },
+        cart: [{
+            applianceId: { type: Schema.Types.ObjectId, ref: 'Appliance', required: true },
+            addedAt: { type: Date, default: Date.now }
+        }],
+        // Provider specific fields (optional for regular users)
+        ...providerFields,
+    },
+    { timestamps: true }
+);
+
+// Delete mongoose.models.User to prevent OverwriteModelError
+if (mongoose.models.User) {
+    delete mongoose.models.User;
+}
+
+export default mongoose.model<IUser>('User', UserSchema);
+
+Provider Model: 
+// src/models/Provider.ts
+import mongoose, { Schema, Document } from 'mongoose';
+import { IUser } from './User';
+
+export interface IProvider extends IUser {
+    businessName: string;
+    businessAddress: {
+        street: string;
+        city: string;
+        state: string;
+        zipCode: string;
+    };
+    rating: number;
+    appliances: string[];
+    isVerified: boolean;
+}
+
+// Define provider fields as a discriminator of User model
+const providerFields = {
+    businessName: {
+        type: String,
+        required: function (this: any) {
+            return this.role === 'PROVIDER';
+        }
+    },
+    businessAddress: {
+        street: {
+            type: String,
+            required: function (this: any) {
+                return this.role === 'PROVIDER';
+            }
+        },
+        city: {
+            type: String,
+            required: function (this: any) {
+                return this.role === 'PROVIDER';
+            }
+        },
+        state: {
+            type: String,
+            required: function (this: any) {
+                return this.role === 'PROVIDER';
+            }
+        },
+        zipCode: {
+            type: String,
+            required: function (this: any) {
+                return this.role === 'PROVIDER';
+            }
+        }
+    },
+    rating: { type: Number, default: 0 },
+    appliances: [{ type: Schema.Types.ObjectId, ref: 'Appliance' }],
+    isVerified: { type: Boolean, default: false }
+};
+
+export { providerFields };
+
+
+Rental Model: 
+// src/models/Rental.ts
+import mongoose, { Schema, Document } from 'mongoose';
+
+export interface IRental extends Document {
+    userId: string;
+    applianceId: string;
+    providerId: string;
+    startDate: Date;
+    endDate: Date;
+    status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+    totalAmount: number;
+    deposit: number;
+    paymentStatus: 'PENDING' | 'PAID' | 'REFUNDED';
+    paymentMethod: 'CASH_ON_DELIVERY' | 'ONLINE';
+    deliveryAddress: {
+        street: string;
+        city: string;
+        state: string;
+        zipCode: string;
+    };
+    deliveryTime: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const RentalSchema = new Schema<IRental>(
+    {
+        userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        applianceId: { type: Schema.Types.ObjectId, ref: 'Appliance', required: true },
+        providerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        startDate: { type: Date, required: true },
+        endDate: { type: Date, required: true },
+        status: {
+            type: String,
+            enum: ['PENDING', 'APPROVED', 'REJECTED', 'ACTIVE', 'COMPLETED', 'CANCELLED'],
+            default: 'PENDING'
+        },
+        totalAmount: { type: Number, required: true },
+        deposit: { type: Number, required: true },
+        paymentStatus: {
+            type: String,
+            enum: ['PENDING', 'PAID', 'REFUNDED'],
+            default: 'PENDING'
+        },
+        paymentMethod: {
+            type: String,
+            enum: ['CASH_ON_DELIVERY', 'ONLINE'],
+            default: 'CASH_ON_DELIVERY'
+        },
+        deliveryAddress: {
+            street: { type: String, required: true },
+            city: { type: String, required: true },
+            state: { type: String, required: true },
+            zipCode: { type: String, required: true }
+        },
+        deliveryTime: { type: String, required: true },
+        hasReview: { type: Boolean, default: false }
+    },
+    { timestamps: true }
+);
+
+export default mongoose.models.Rental || mongoose.model<IRental>('Rental', RentalSchema);
+
+Review Model: 
+// src/models/Review.ts
+import mongoose, { Schema, Document } from 'mongoose';
+
+export interface IReview extends Document {
+    userId: string;
+    applianceId: string;
+    providerId: string;
+    rating: number;
+    comment: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const ReviewSchema = new Schema<IReview>(
+    {
+        userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        applianceId: { type: Schema.Types.ObjectId, ref: 'Appliance', required: true },
+        providerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        rating: {
+            type: Number,
+            required: true,
+            min: 1,
+            max: 5
+        },
+        comment: { type: String, required: true }
+    },
+    { timestamps: true }
+);
+
+// Create a compound index to ensure one review per user per appliance
+ReviewSchema.index({ userId: 1, applianceId: 1 }, { unique: true });
+
+export default mongoose.models.Review || mongoose.model<IReview>('Review', ReviewSchema);
+
+</models>
+
+
+</project>
+
+
+This is the project that i am working on.
+It is a full stack website that i want to build for home appliance rental.
+I want you to refer this document that i provided for some context, But i want you to feel free to also use your own thinking and creativity where necessary.
+For the project the tech stack i will be using would be: Nextjs (with tailwind css, typescript, app router, src directory), MongoDB Atlas (**NoSQL database**), *Shadcn UI* and Amazon AWS S3 buckets for images.
+I want you to help me with the implementation of the project.
+All the things you implement should be fully functional as per my requirements, in consideration/at per with the types/interfaces I've provided and should be mobile responsive. 
+I have already initialized a nextjs project (with app router, tailwind css, typescript, src directory), i have already created the cluster on MongoDB Atlas and have stored the environment variable for mongodb connection string in the ".env.local" file. i have also initialized shadcn ui with the command "npx shadcn@latest init -d". 
+And i have also setup s3 bucket in AWS and created the api for uploading images in AWS at "src/app/api/upload/route.ts".
+And with your help, i have also already built the login/register functionality following the steps and code you provided: 
+
+<Steps>
+
+      "1. First, let's install the required packages:
+      bashCopynpm install next-auth bcrypt mongodb mongoose
+      # or with yarn
+      yarn add next-auth bcrypt mongodb mongoose
+      2. Let's create the MongoDB connection utility:
+      MongoDB Connection UtilityClick to open codeTap to open
+      3. Now, let's create our User model:
+      User ModelClick to open codeTap to open
+      4. Setting up NextAuth Configuration:
+      NextAuth SetupClick to open codeTap to open
+      5. Now let's create the type definitions for NextAuth:
+      NextAuth Type DefinitionsClick to open codeTap to open
+      6. Now, let's implement the authentication pages:
+      Auth Context ProviderClick to open codeTap to open
+      7. Let's update the root layout to include our providers:
+      Root Layout with Auth ProviderClick to open codeTap to open
+      8. Let's implement the Authentication UI Components using ShadcN UI:
+      First, install shadcn UI:
+      bashCopynpx shadcn-ui@latest init
+      # Then install the required components
+      npx shadcn-ui@latest add button input form toast card
+      Auth LayoutClick to open codeTap to open
+      9. Now let's implement the Login page:
+      Login PageClick to open codeTap to open
+      10. Now let's implement the Registration page:
+      Register PageClick to open codeTap to open
+      11. Finally, let's create the API route for registration:
+      Registration API RouteClick to open codeTap to open
+      12. Create a Toast component for notifications:
+      Toast ComponentClick to open codeTap to open
+      Setting Up Environment Variables
+      Create a .env.local file in the root of your project with the following variables:
+      CopyMONGODB_URI=mongodb+srv://yourusername:yourpassword@cluster0.mongodb.net/appliance-rental?retryWrites=true&w=majority
+      NEXTAUTH_URL=http://localhost:3000
+      NEXTAUTH_SECRET=your-secret-key-here-make-it-long-and-random
+      Final Setup Steps
+
+      Update the next.config.js to add experimental server actions:
+
+      Next.js ConfigurationClick to open codeTap to open
+
+      Create a middleware for route protection:
+
+      Authentication MiddlewareClick to open codeTap to open"
+
+</Steps>
+
+
+I have started building the providers part and have created layout, some pages and functionalities already with your help.
+These are the things i have implemented in the providers part so far with your help.
+
+<implemented>
+
+1. A responsive sidebar and layout for the providers part (src\app\provider\layout.tsx)
+2. Complete CRUD operations of appliances functionality for the providers part including backend apis, frontend, actions, etc. whcih includes:
+    - src\app\provider\appliances\page.tsx
+    - src\app\provider\appliances\new\page.tsx
+    - src\app\provider\appliances\[id]\page.tsx
+    - src\app\api\provider\appliances\route.ts 
+    - src\app\api\provider\appliances\[id]\route.ts (API route for single appliance operations (get, update, delete))
+    - src\app\actions\appliance.ts
+3. Complete Rentals opertions/management for providers part including backend apis, frontend, actions, etc. whcih includes:
+    - src\app\provider\rentals\page.tsx
+    - src\app\provider\rentals\[id]\page.tsx
+    - src\app\provider\rentals\[id]\rental-status-actions.tsx
+    - src\app\api\provider\rentals\route.ts
+    - src\app\api\provider\rentals\[id]\route.ts
+    - src\app\actions\rental.ts
+
+</implemented>
+
+
+
+So, Now i want to continue building the remaining parts of the project continuing from the previous progress.
+Now, I want to build the Profile and Dashboard parts for the providers part with complete backend/api and frontend functionlity (Start with backend first).
+For that, i want you to refer all the models that i have provided you.
+GO ahead with whatever you think would be correct to move ahead with. 
+But whatever you implement, it should be fully functional as per my requirements and at par with other parts of the project.
+
+
+Also before implementing, if u need more context or any code/models/types/apis etc. feel free to ask.
+
+
+One more thing after the above is done is that i want you to make the layout for the rentals better. 
+This is the current layout: 
+"// src/app/provider/layout.tsx
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import Link from "next/link";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  Star,
+  UserCircle,
+  Menu,
+  X,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
+interface NavLinkProps {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  isActive?: boolean;
+}
+
+function NavLink({ href, icon, label, isActive }: NavLinkProps) {
+  return (
+    <Link
+      href={href}
+      className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+        isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"
+      }`}
+    >
+      {icon}
+      <span>{label}</span>
+    </Link>
+  );
+}
+
+export default async function ProviderLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const session = await getServerSession(authOptions);
+
+  if (!session || session.user.role !== "PROVIDER") {
+    redirect("/auth/login");
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon" className="md:hidden">
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">Toggle menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="pr-0">
+            <div className="flex flex-col gap-6">
+              <Link href="/" className="flex items-center gap-2 font-semibold">
+                Appliance Rental Provider
+              </Link>
+              <nav className="flex flex-col gap-2">
+                <NavLink
+                  href="/provider"
+                  icon={<LayoutDashboard size={16} />}
+                  label="Dashboard"
+                />
+                <NavLink
+                  href="/provider/appliances"
+                  icon={<Package size={16} />}
+                  label="Appliances"
+                />
+                <NavLink
+                  href="/provider/rentals"
+                  icon={<ShoppingCart size={16} />}
+                  label="Rentals"
+                />
+                <NavLink
+                  href="/provider/reviews"
+                  icon={<Star size={16} />}
+                  label="Reviews"
+                />
+                <NavLink
+                  href="/provider/profile"
+                  icon={<UserCircle size={16} />}
+                  label="profile"
+                />
+              </nav>
+            </div>
+          </SheetContent>
+        </Sheet>
+        <Link href="/" className="flex items-center gap-2 font-semibold">
+          Appliance Rental
+        </Link>
+        <div className="ml-auto flex items-center gap-4">
+          <span className="text-sm text-muted-foreground hidden md:inline-block">
+            Welcome, {session.user.name || session.user.email}
+          </span>
+        </div>
+      </header>
+      <div className="flex flex-1">
+        <aside className="hidden w-64 shrink-0 border-r md:block">
+          <div className="flex h-full flex-col gap-6 p-4">
+            <nav className="flex flex-col gap-2">
+              <NavLink
+                href="/provider"
+                icon={<LayoutDashboard size={16} />}
+                label="Dashboard"
+              />
+              <NavLink
+                href="/provider/appliances"
+                icon={<Package size={16} />}
+                label="Appliances"
+              />
+              <NavLink
+                href="/provider/rentals"
+                icon={<ShoppingCart size={16} />}
+                label="Rentals"
+              />
+              <NavLink
+                href="/provider/reviews"
+                icon={<Star size={16} />}
+                label="Reviews"
+              />
+              <NavLink
+                href="/provider/profile"
+                icon={<UserCircle size={16} />}
+                label="profile"
+              />
+            </nav>
+          </div>
+        </aside>
+        <main className="flex-1 p-4 md:p-6">{children}</main>
+      </div>
+    </div>
+  );
+}
+"
+
+The looks, positions and styling of this is great. It has sticky header with title "Appliance Rental" which is good too. But i some changes and additions in it:
+    - Remove the Reviews NavLink.
+    - It should have a logout button at bottom of sidebar.
+    - The sidebar should indicate active link/page.
+    - On mobile the sidebar should close, when a navlink is clicked on.
+
+I would recommend you to create a separate component called ProviderLayout and it could be imported in the Layouts page.
