@@ -71,7 +71,9 @@ export default function AdminSidebar() {
       >
         <div className="flex flex-col h-full">
           <div className="p-6 border-b">
-            <h2 className="text-2xl font-bold text-primary">Admin Panel</h2>
+            <h2 className="text-2xl ml-10 sm:ml-4 font-bold text-primary">
+              Admin Panel
+            </h2>
           </div>
 
           <nav className="flex-1 p-4 space-y-1">
@@ -91,14 +93,14 @@ export default function AdminSidebar() {
               </Link>
             ))}
 
-            <Link
+            {/* <Link
               href="/"
               className="flex items-center px-4 py-3 mt-2 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <Home className="h-5 w-5 mr-3" />
               <span>Back to Home</span>
-            </Link>
+            </Link> */}
           </nav>
 
           <div className="p-4 border-t">

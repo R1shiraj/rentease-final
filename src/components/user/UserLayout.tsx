@@ -1,5 +1,3 @@
-// src/components/user/UserLayout.tsx
-
 "use client";
 
 import React, { useState } from "react";
@@ -16,8 +14,10 @@ import {
   Star,
   User,
   LogOut,
+  UsersRound,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 
@@ -29,13 +29,18 @@ const navItems = [
   { name: "Rental History", href: "/user/rentals/history", icon: History },
   { name: "My Reviews", href: "/user/reviews", icon: Star },
   { name: "Profile", href: "/user/profile", icon: User },
+  { name: "About Us", href: "/user/about-us", icon: UsersRound },
 ];
 
 const NavItem = ({ name, href, icon: Icon, isActive, onClick }) => (
   <Link
     href={href}
-    className={`flex items-center gap-4 rounded-lg px-4 py-3 transition-all hover:bg-accent
-      ${isActive ? "bg-accent" : "transparent"}`}
+    className={`flex items-center gap-4 rounded-lg px-4 py-3 transition-all 
+      ${
+        isActive
+          ? "bg-blue-100/70 border-l-4 border-primary text-primary font-semibold"
+          : "hover:bg-blue-50 text-gray-700"
+      }`}
     onClick={onClick}
   >
     <Icon className="h-5 w-5" />
@@ -54,7 +59,16 @@ const Sidebar = ({ className = "", onNavItemClick }) => {
     <div className={`h-full border-r bg-card ${className}`}>
       <div className="flex h-full flex-col">
         <div className="p-6">
-          <h2 className="text-2xl font-bold tracking-tight">Rentease</h2>
+          <div className="flex items-center gap-2">
+            <Image
+              src="https://rashid-rentease-images.s3.ap-southeast-2.amazonaws.com/appliances/1741630098404-IMG-20250304-WA0000.jpg"
+              alt="RentEase Logo"
+              width={36}
+              height={36}
+              className="rounded-md"
+            />
+            <h2 className="text-2xl font-bold tracking-tight">RentEase</h2>
+          </div>
         </div>
         <ScrollArea className="flex-1 px-4">
           <div className="flex flex-col gap-3">
@@ -91,7 +105,7 @@ const UserLayout = ({ children }) => {
   };
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-gradient-to-br from-blue-50 to-slate-100">
       {/* Desktop Sidebar */}
       <Sidebar className="hidden w-72 lg:block" />
 
@@ -99,11 +113,11 @@ const UserLayout = ({ children }) => {
       <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
         <SheetTrigger asChild>
           <Button
-            variant="ghost"
-            className="lg:hidden fixed left-4 top-4 z-40"
+            variant="outline"
+            className="lg:hidden fixed left-2 top-2 z-40"
             size="icon"
           >
-            <Menu className="h-8 w-8" />
+            <Menu />
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="p-0 w-72">
@@ -112,7 +126,7 @@ const UserLayout = ({ children }) => {
       </Sheet>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-8 pt-24 lg:pt-8">
+      <main className="flex-1 overflow-y-auto p-8 lg:pt-8 bg-white/70 rounded-xl shadow-sm">
         {children}
       </main>
     </div>

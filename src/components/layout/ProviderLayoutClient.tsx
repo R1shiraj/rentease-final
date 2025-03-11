@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { signOut } from "next-auth/react";
+import Image from "next/image";
 
 interface NavLinkProps {
   href: string;
@@ -55,7 +56,7 @@ export default function ProviderLayoutClient({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
+      <header className="sticky top-0 z-30 flex h-16 items-center gap-12 border-b bg-background px-4 sm:px-6">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="md:hidden">
@@ -68,9 +69,16 @@ export default function ProviderLayoutClient({
               <div className="flex-shrink-0">
                 <Link
                   href="/"
-                  className="flex items-center gap-2 font-semibold text-lg p-4"
+                  className="flex items-center gap-2 font-bold text-2xl p-2"
                 >
-                  Appliance Rental Provider
+                  <Image
+                    src="https://rashid-rentease-images.s3.ap-southeast-2.amazonaws.com/appliances/1741630098404-IMG-20250304-WA0000.jpg"
+                    alt="RentEase Logo"
+                    width={36}
+                    height={36}
+                    className="rounded-md"
+                  />
+                  <p>RentEase</p>
                 </Link>
               </div>
               <div className="flex flex-col justify-between h-[calc(100%-60px)] overflow-hidden">
@@ -118,8 +126,18 @@ export default function ProviderLayoutClient({
             </div>
           </SheetContent>
         </Sheet>
-        <Link href="/" className="flex items-center gap-2 font-semibold">
-          Appliance Rental
+        <Link
+          href="/"
+          className="flex items-center gap-2 font-bold text-2xl p-2"
+        >
+          <Image
+            src="https://rashid-rentease-images.s3.ap-southeast-2.amazonaws.com/appliances/1741630098404-IMG-20250304-WA0000.jpg"
+            alt="RentEase Logo"
+            width={36}
+            height={36}
+            className="rounded-md"
+          />
+          <p>RentEase</p>
         </Link>
         <div className="ml-auto flex items-center gap-4">
           <span className="text-sm text-muted-foreground hidden md:inline-block">

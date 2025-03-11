@@ -24,7 +24,9 @@ export default async function ProviderDashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Provider's Dashboard
+        </h1>
         <p className="text-muted-foreground">
           Overview of your business and performance
         </p>

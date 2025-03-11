@@ -46,11 +46,11 @@ export function StripePaymentWrapper({
     const createPaymentIntent = async () => {
       try {
         setIsLoading(true);
-        // const response = await fetch("/api/payment", {
-        //   method: "POST",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify({ amount, metadata }),
-        // });
+        const response = await fetch("/api/payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount, metadata }),
+        });
 
         const data = await response.json();
 

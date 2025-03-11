@@ -58,20 +58,62 @@ const HeroCarousel = ({ appliances }: { appliances: IAppliance[] }) => {
           {appliances.map((appliance) => (
             <CarouselItem key={appliance._id}>
               <Link href={`/user/appliances/${appliance._id}`}>
-                <div className="relative h-64 md:h-96 w-full overflow-hidden rounded-xl">
-                  <Image
-                    src={appliance.images[0] || "/placeholder-appliance.jpg"}
-                    alt={appliance.name}
-                    fill
-                    className="object-cover transition-transform hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent">
-                    <div className="absolute bottom-0 p-6 text-white">
-                      <h3 className="text-2xl font-bold">{appliance.name}</h3>
-                      <p className="text-lg">
-                        {appliance.specifications.brand} - ₹
-                        {appliance.pricing.daily}/day
+                <div className="relative h-64 md:h-80 md:flex md:flex-row md:items-center md:rounded-xl md:shadow-lg md:overflow-hidden md:border">
+                  {/* Image container - square but height-constrained on desktop */}
+                  <div className="relative h-full w-full md:w-1/2 md:h-80 overflow-hidden">
+                    <Image
+                      src={appliance.images[0] || "/placeholder-appliance.jpg"}
+                      alt={appliance.name}
+                      fill
+                      className="object-contain transition-transform hover:scale-105"
+                    />
+                    {/* Gradient overlay for mobile only */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent md:hidden">
+                      <div className="absolute bottom-0 p-6 text-white md:hidden">
+                        <h3 className="text-2xl font-bold">{appliance.name}</h3>
+                        <p className="text-lg">
+                          {appliance.specifications.brand} - ₹
+                          {appliance.pricing.daily}/day
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Product details section - desktop only */}
+                  <div className="hidden md:block md:w-1/2 md:p-6 md:bg-gradient-to-l md:from-blue-50 md:to-white md:h-80">
+                    <h3 className="text-2xl font-bold mb-2">
+                      {appliance.name}
+                    </h3>
+                    <p className="text-lg text-primary font-semibold mb-3">
+                      {appliance.specifications.brand} - ₹
+                      {appliance.pricing.daily}/day
+                    </p>
+                    <div className="space-y-2">
+                      <p className="line-clamp-2 text-gray-600 text-sm">
+                        {appliance.description}
                       </p>
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="font-medium">Model:</span>
+                        <span>{appliance.specifications.model}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="font-medium">Status:</span>
+                        <span className="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-800">
+                          {appliance.status}
+                        </span>
+                      </div>
+                      {/* {appliance.ratings && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="font-medium">Rating:</span>
+                          <span>
+                            {appliance.ratings} ({appliance.reviewCount || 0}{" "}
+                            reviews)
+                          </span>
+                        </div>
+                      )} */}
+                      <Button size="sm" className="mt-2">
+                        View Details
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -79,8 +121,8 @@ const HeroCarousel = ({ appliances }: { appliances: IAppliance[] }) => {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="left-2" />
-        <CarouselNext className="right-2" />
+        <CarouselPrevious className="left-2 bg-white/80 text-primary shadow-md hover:bg-white" />
+        <CarouselNext className="right-2 bg-white/80 text-primary shadow-md hover:bg-white" />
       </Carousel>
     </div>
   );
@@ -90,7 +132,7 @@ const HeroCarousel = ({ appliances }: { appliances: IAppliance[] }) => {
 const ApplianceCard = ({ appliance }: ApplianceCardProps) => {
   return (
     <Link href={`/user/appliances/${appliance._id}`}>
-      <Card className="h-full overflow-hidden transition-all hover:shadow-lg">
+      <Card className="h-full overflow-hidden transition-all hover:shadow-lg bg-gradient-to-b from-white to-blue-50 border border-blue-100/50 hover:-translate-y-1 duration-200">
         <div className="relative aspect-square overflow-hidden">
           <Image
             src={appliance.images[0] || "/placeholder-appliance.jpg"}
@@ -115,8 +157,10 @@ const ApplianceCard = ({ appliance }: ApplianceCardProps) => {
             </span>
           </div>
         </CardContent>
-        <CardFooter className="p-4 border-t">
-          <p className="font-semibold">₹{appliance.pricing.daily}/day</p>
+        <CardFooter className="p-4 border-t border-blue-100/50">
+          <p className="font-semibold text-primary text-lg">
+            ₹{appliance.pricing.daily}/day
+          </p>
         </CardFooter>
       </Card>
     </Link>
@@ -127,8 +171,8 @@ const ApplianceCard = ({ appliance }: ApplianceCardProps) => {
 const CategoryCard = ({ category }: CategoryCardProps) => {
   return (
     <Link href={`/user/appliances?category=${category._id}`}>
-      <Card className="overflow-hidden transition-all hover:shadow-lg">
-        <div className="relative h-32 w-full overflow-hidden">
+      <Card className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 duration-200">
+        <div className="relative h-32 w-full overflow-hidden rounded-md shadow-md">
           <Image
             src={category.image || "/placeholder-category.jpg"}
             alt={category.name}
@@ -263,7 +307,11 @@ const FilterSheet = ({
                   }
                   size="sm"
                   onClick={() => toggleBrand(brand)}
-                  className="justify-start"
+                  className={`justify-start ${
+                    selectedBrands.includes(brand)
+                      ? "bg-primary/90 hover:bg-primary"
+                      : "hover:bg-blue-50 border-blue-100"
+                  }`}
                 >
                   {brand}
                 </Button>
@@ -358,7 +406,7 @@ const HomePage = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary border-t-2 border-blue-300"></div>
       </div>
     );
   }
