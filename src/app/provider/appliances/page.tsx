@@ -30,7 +30,7 @@ export default async function AppliancesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Manage Appliances</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Appliances</h1>
         <Link href="/provider/appliances/new">
           <Button className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
